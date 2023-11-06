@@ -14,13 +14,13 @@ pipeline {
             steps {
                 script {
                     // build image
-                    docker.build("456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:latest")
+                    docker.build("456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:${buildNumber}")
                }
             }
         }
         stage('Trivy Scan (Aqua)') {
             steps {
-                sh 'trivy image --format template --output trivy_report.html 456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:latest'
+                sh 'trivy image --format template --output trivy_report.html 456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:${buildNumber}'
             }
        }
         stage('Push to ECR') {
@@ -29,7 +29,7 @@ pipeline {
                     //https://<AwsAccountNumber>.dkr.ecr.<region>.amazonaws.com/netflix-app', 'ecr:<region>:<credentialsId>
                     docker.withRegistry('https://456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:latest', 'ecr:us-east-1:Doings-AWS-ECR-CREDENTIALS') {
                     // build image
-                    def myImage = docker.build("456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:latest")
+                    def myImage = docker.build("456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:${buildNumber}")
                     // push image
                     myImage.push()
                     }
