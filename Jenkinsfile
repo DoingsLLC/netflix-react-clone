@@ -14,13 +14,13 @@ pipeline {
             steps {
                 script {
                     // build image
-                    docker.build("456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:${buildNumber}")
+                    docker.build("456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:V1")
                }
             }
         }
         stage('Trivy Scan (Aqua)') {
             steps {
-                sh 'trivy image --format template --output trivy_report.html 456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:${buildNumber}'
+                sh 'trivy image --format template --output trivy_report.html 456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:V1'
             }
        }
         stage('Push to ECR') {
