@@ -3,39 +3,42 @@ pipeline {
     options {
         timeout(time: 20, unit: 'MINUTES')
     }
-    stages{
+    stages {
         // NPM dependencies
-        stage('pull npm dependencies') {
+        stage('Pull NPM dependencies') {
             steps {
                 sh 'npm install'
             }
         }
-       stage('build Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    // build image
-                    docker.build("456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:V1")
-               }
+                    // Build image with the updated tag
+                    def imageTag = "V1.${BUILD_NUMBER}"
+                    docker.build("456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:${imageTag}")
+                }
             }
         }
         stage('Trivy Scan (Aqua)') {
             steps {
-                sh 'trivy image --format template --output trivy_report.html 456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:V1'
+                sh 'trivy image --format template --output trivy_report.html 456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:V1.${BUILD_NUMBER}'
             }
-       }
+        }
         stage('Push to ECR') {
             steps {
-                script{
-                    //https://<AwsAccountNumber>.dkr.ecr.<region>.amazonaws.com/netflix-app', 'ecr:<region>:<credentialsId>
+                script {
+                    // Define the image tag
+                    def imageTag = "V1.${BUILD_NUMBER}"
+                    
+                    // Use the updated image tag in the withRegistry and build steps
                     docker.withRegistry('https://456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:latest', 'ecr:us-east-1:Doings-AWS-ECR-CREDENTIALS') {
-                    // build image
-                    def myImage = docker.build("456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:V1")
-                    // push image
-                    myImage.push()
+                        // Build image with the updated tag
+                        def myImage = docker.build("456618395112.dkr.ecr.us-east-1.amazonaws.com/doingsecr:${imageTag}")
+                        // Push image
+                        myImage.push()
                     }
                 }
             }
         }
-        
     }
 }
